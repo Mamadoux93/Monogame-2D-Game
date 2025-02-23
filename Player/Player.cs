@@ -76,7 +76,7 @@ namespace UltraLongMonogameTutoriel
 
             velocity.Y = Math.Min(25.0f, velocity.Y);
 
-            if (!cameraManager.isCinemating)
+            if (!cameraManager.IsCinemating)
             {
                 if (keystate.IsKeyDown(Keys.D))
                 {

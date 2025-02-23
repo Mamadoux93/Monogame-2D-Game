@@ -172,14 +172,10 @@ public class Game1 : Game
         RessourceManager.Textures["rectangleTexture"] = rectangleTexture;
 
 
-        cameraManager = new(0, 0);
-
-
-
+        cameraManager = new(1437, -6000, _graphics);
 
         triggerManager = new(cameraManager);
         
-
         textureAtlas = Content.Load<Texture2D>("tempassets");
         hitboxTexture = Content.Load<Texture2D>("hitboxes");
 
@@ -313,7 +309,7 @@ public class Game1 : Game
         
         Debug.WriteLineIf(sprites.OfType<EnemyZebi>().Any() || sprites.OfType<Projectiles>().Any(), $"Nombre d'ennemis: {sprites.OfType<EnemyZebi>().Count()} | Nombre de projectiles: {sprites.OfType<Projectiles>().Count()}");
 
-        if (!cameraManager.isCinemating)
+        if (!cameraManager.IsCinemating && !cameraManager.FirstCinematic)
         {
             int levelWidth = 657 * Globals.TILESIZE;
             int levelHeight = 135 * Globals.TILESIZE;
@@ -813,7 +809,7 @@ public class Game1 : Game
             // Calculer la distance entre le joueur et le tile
             float distance = Vector2.Distance(tilePosition, player.rect.Location.ToVector2());
 
-            if (distance < drawDistance && !cameraManager.isCinemating)
+            if (distance < drawDistance && !cameraManager.IsCinemating)
             {
                 Rectangle drect = new(
                 (int)item.Key.X * Globals.TILESIZE + (int)cameraManager.CameraPostion.X,
@@ -868,7 +864,7 @@ public class Game1 : Game
             float distance = Vector2.Distance(tilePosition, player.rect.Location.ToVector2());
 
 
-            if (distance < drawDistance && !cameraManager.isCinemating)
+            if (distance < drawDistance && !cameraManager.IsCinemating)
             {
                 // create the destination rect from the key
                 Rectangle drect = new(
@@ -923,7 +919,7 @@ public class Game1 : Game
 
                 // distance entre player et le tile sa mere
                 float distance = Vector2.Distance(tilePosition, player.rect.Location.ToVector2());
-                if (distance < drawDistance && !cameraManager.isCinemating)
+                if (distance < drawDistance && !cameraManager.IsCinemating)
                 {
                     Rectangle drect = new(
                         (int)item.Key.X * Globals.TILESIZE + (int)cameraManager.CameraPostion.X,

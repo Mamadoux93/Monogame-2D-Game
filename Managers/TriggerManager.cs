@@ -42,7 +42,7 @@ namespace UltraLongMonogameTutoriel.Managers
             {
                 if (triggerBox.rect.Intersects(player.rect) && !triggerStates[triggerBox])
                 {
-                    cameraManager.isCinemating = true;
+                    cameraManager.IsCinemating = true;
                     triggerStates[triggerBox] = true;
                     break;
                 }

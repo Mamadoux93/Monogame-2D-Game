@@ -42,27 +42,22 @@ namespace UltraLongMonogameTutoriel.Managers
 
             ui.AddCanvas(200, 500, 1000, 1000);
 
-            triggerManager.AddTriggerBox(player.rect.X, player.rect.Y, 90, 90, Color.Red).OnIntersection += CinematicTriggerBox;
-            triggerManager.AddTriggerBox(player.rect.X + 500, player.rect.Y - 800, 90, 1000, Color.Red).OnIntersection += CinematicTriggerBox;
+            triggerManager.AddTriggerBox(player.rect.X, player.rect.Y, 90, 90, Color.Red).OnIntersection += FirstCinematicTriggerBox;
+            triggerManager.AddTriggerBox(player.rect.X + 500, player.rect.Y - 800, 90, 1000, Color.Red).OnIntersection += FirstCinematicTriggerBox;
         }
 
         public void Update()
         {
-            
             ui.Update();
             
             DragDropManager.Update();
             InputManager.Update();
-
         }
         //--Cinematics
-        private void CinematicTriggerBox(object sender, EventArgs e)
+        private void FirstCinematicTriggerBox(object sender, EventArgs e)
         {
-            cameraManager.StartCinematic(1, -1600, -7272);
-        }
-        private void TripleCinematicTriggerBox(object sender, EventArgs e)
-        {
-            
+            cameraManager.StartCinematic(1, -player.rect.X, -player.rect.Y);
+            cameraManager.FirstCinematic = false;
         }
         //--Cinematics
         private void SpawnProjectile(object sender, EventArgs e)
@@ -107,7 +102,7 @@ namespace UltraLongMonogameTutoriel.Managers
 
         public void Draw()
         {
-            if (!cameraManager.isCinemating)
+            if (!cameraManager.IsCinemating)
             {
                 ui.Draw();
             }
