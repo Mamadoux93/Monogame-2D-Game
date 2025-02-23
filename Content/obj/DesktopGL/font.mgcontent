@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PipelineBuildEvent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <SourceFile>D:/Trucs de geek/Dossier pr coder/UltraLongMonogameTutoriel/UltraLongMonogameTutoriel/Content/font.spritefont</SourceFile>
+  <SourceTime>2025-02-15T20:38:01.7099583+01:00</SourceTime>
+  <DestFile>D:/Trucs de geek/Dossier pr coder/UltraLongMonogameTutoriel/UltraLongMonogameTutoriel/Content/bin/DesktopGL/font.xnb</DestFile>
+  <DestTime>2025-02-22T12:19:04.4730033+01:00</DestTime>
+  <Importer>FontDescriptionImporter</Importer>
+  <ImporterTime>2022-07-26T13:44:56+02:00</ImporterTime>
+  <Processor>FontDescriptionProcessor</Processor>
+  <ProcessorTime>2022-07-26T13:44:56+02:00</ProcessorTime>
+  <Parameters>
+    <Key>PremultiplyAlpha</Key>
+    <Value>True</Value>
+  </Parameters>
+  <Parameters>
+    <Key>TextureFormat</Key>
+    <Value>Compressed</Value>
+  </Parameters>
+  <Dependencies />
+  <BuildAsset />
+  <BuildOutput />
+</PipelineBuildEvent>
