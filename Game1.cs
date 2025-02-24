@@ -25,39 +25,34 @@ public class Game1 : Game
     private GameWindow _window;
 
 
-    private Dictionary<Vector2, int> mg;
-    private Dictionary<Vector2, int> fg;
-    private Dictionary<Vector2, int> collisions;
-    private Texture2D textureAtlas;
-    private Texture2D hitboxTexture;
-    private Texture2D fireballTexture;
-    private Texture2D enemyTexture;
-    private Texture2D mushroomTexture;
+    private readonly Dictionary<Vector2, int> mg;
+    private readonly Dictionary<Vector2, int> fg;
+    private readonly Dictionary<Vector2, int> collisions;
 
-    private Vector2 camera;
+    
 
-    private Matrix cameraMatrix;
 
-    private CameraManager cameraManager;
+    
     private int spawnPointX = 1001;
     private int spawnPointY = 8256;
-    private int lastWidth, lastHeight;
 
     public int playerSpriteSizeX = 8;
     public int playerSpriteSizeY = 16;
 
     private Texture2D rectangleTexture;
     private Texture2D pixel;
+    private Texture2D textureAtlas;
+    private Texture2D hitboxTexture;
 
     private List<Sprite> sprites;
     private List<Sprite> usableItems;
     private List<Sprite> binList;
 
 
-    private List<TriggerBox> boxes;
     private TriggerManager triggerManager;
-
+    private CameraManager cameraManager;
     private GameManager gameManager;
+    private SceneManager sceneManager;
 
     
 
@@ -71,7 +66,7 @@ public class Game1 : Game
     private EnemyZebi enemy;
     private Items mushroom;
     private Projectiles projectile;
-    private TriggerBox stompBox;
+    
 
 
 
@@ -89,18 +84,18 @@ public class Game1 : Game
         _window.AllowUserResizing = true;
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
+
         fg = LoadMap("../../../Data/zaza_fg.csv");
         mg = LoadMap("../../../Data/zaza_mg.csv");
         collisions = LoadMap("../../../Data/zaza_collisions.csv");
-        camera = Vector2.Zero;
+
         intersections = new();
         sprites = new List<Sprite>();
         usableItems = new List<Sprite>();
         binList = new List<Sprite>();
-        boxes = new List<TriggerBox>();
         enemyBoxes = new Dictionary<EnemyZebi, TriggerBox>();
-        cameraMatrix = new Matrix();
 
+        sceneManager = new();
     }
 
     // Opens a CSV file, reads it line by line, splits the line into
@@ -165,6 +160,7 @@ public class Game1 : Game
         RessourceManager resourceManager = new RessourceManager();
         resourceManager.LoadContent(Content);
 
+        sceneManager.AddScene(new SpaceScene(Content, sceneManager, _graphics));
 
         RessourceManager.Textures["fireball"] = Content.Load<Texture2D>("fireball");
         RessourceManager.Textures["player_static"] = Content.Load<Texture2D>("player_static");
@@ -172,7 +168,7 @@ public class Game1 : Game
         RessourceManager.Textures["rectangleTexture"] = rectangleTexture;
 
 
-        cameraManager = new(1437, -6000, _graphics);
+        cameraManager = new(1437, -1000, _graphics);
 
         triggerManager = new(cameraManager);
         
@@ -210,6 +206,8 @@ public class Game1 : Game
     {
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
+
+        sceneManager.GetCurrentScene().Update(gameTime);
 
         player.Update(Keyboard.GetState(), prevKeystate, gameTime);
 
@@ -401,6 +399,8 @@ public class Game1 : Game
 
         // TODO: Add your drawing code here
         _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+
+        sceneManager.GetCurrentScene().Draw();
 
         float drawDistance =(float)(_graphics.PreferredBackBufferWidth / 1.5);
 

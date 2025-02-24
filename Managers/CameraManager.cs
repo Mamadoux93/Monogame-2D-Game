@@ -55,13 +55,9 @@ namespace UltraLongMonogameTutoriel.Managers
                     CameraPostion = targetPosition;
                     IsCinemating = false;
                     hasCinematicPlayed = true;
-                    Debug.WriteLine($"Cinematic finished! at {CameraPostion.X} - {CameraPostion.Y}");
+                    Debug.WriteLine($"Cinematic finished at {CameraPostion.X} - {CameraPostion.Y}");
                 }
             }
-        }
-        public void ResetCinematic()
-        {
-            hasCinematicPlayed = false;
         }
     }
 }

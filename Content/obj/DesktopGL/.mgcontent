@@ -4,6 +4,7 @@
   <Platform>DesktopGL</Platform>
   <Config />
   <SourceFiles>
+    <File>D:/Trucs de geek/Dossier pr coder/UltraLongMonogameTutoriel/UltraLongMonogameTutoriel/Content/BackGrounds/1000.png</File>
     <File>D:/Trucs de geek/Dossier pr coder/UltraLongMonogameTutoriel/UltraLongMonogameTutoriel/Content/font.spritefont</File>
     <File>D:/Trucs de geek/Dossier pr coder/UltraLongMonogameTutoriel/UltraLongMonogameTutoriel/Content/sprites/fireball.png</File>
     <File>D:/Trucs de geek/Dossier pr coder/UltraLongMonogameTutoriel/UltraLongMonogameTutoriel/Content/sprites/hello_kitty bien détouré.png</File>
@@ -14,6 +15,7 @@
     <File>D:/Trucs de geek/Dossier pr coder/UltraLongMonogameTutoriel/UltraLongMonogameTutoriel/Content/tiles/tempassets.png</File>
   </SourceFiles>
   <DestFiles>
+    <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />

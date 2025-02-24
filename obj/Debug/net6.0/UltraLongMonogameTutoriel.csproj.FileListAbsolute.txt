@@ -39,3 +39,4 @@ D:\Trucs de geek\Dossier pr coder\UltraLongMonogameTutoriel\UltraLongMonogameTut
 D:\Trucs de geek\Dossier pr coder\UltraLongMonogameTutoriel\UltraLongMonogameTutoriel\bin\Debug\net6.0\Content\tiles\tempassets.xnb
 D:\Trucs de geek\Dossier pr coder\UltraLongMonogameTutoriel\UltraLongMonogameTutoriel\bin\Debug\net6.0\Content\font.xnb
 D:\Trucs de geek\Dossier pr coder\UltraLongMonogameTutoriel\UltraLongMonogameTutoriel\obj\Debug\net6.0\UltraLongMonogameTutoriel.sourcelink.json
+D:\Trucs de geek\Dossier pr coder\UltraLongMonogameTutoriel\UltraLongMonogameTutoriel\bin\Debug\net6.0\Content\BackGrounds\1000.xnb
