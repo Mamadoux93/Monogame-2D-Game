@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("UltraLongMonogameTutoriel")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2938a2ef9d113d0a308cd9d14061b6f142b5e4fa")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a3594de545423db4b6d1d6f5778e7d25a2a31e3d")]
 [assembly: System.Reflection.AssemblyProductAttribute("UltraLongMonogameTutoriel")]
 [assembly: System.Reflection.AssemblyTitleAttribute("UltraLongMonogameTutoriel")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

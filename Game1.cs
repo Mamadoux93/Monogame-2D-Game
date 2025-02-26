@@ -236,13 +236,9 @@ public class Game1 : Game
 
         player.Walled = false;
 
-        Debug.WriteLine($"Nombre de scènes dans scenes : {scenes.Length}");
-
-        Debug.WriteLine($"Scene actuelle dans SceneManager: {sceneManager.CurrentScene?.GetType().Name}");
-
         foreach (var scene in scenes)
         {
-            Debug.WriteLine(scene);
+            //Debug.WriteLine(scene);
             if (sceneManager.CurrentScene.GetType() == scene.GetType())
             {
                 if (Globals.LevelChange)
@@ -271,19 +267,6 @@ public class Game1 : Game
                 i--;
             }
         }
-
-        /*foreach (var sprite in sprites)
-        {
-            if (sprite is EnemyZebi enemy)
-            {
-                if (player.rect.Intersects(enemy.rect))
-                {
-                    Debug.WriteLine($"Collision détectée ! Player: {player.rect}, Enemy: {enemy.rect}");
-                }
-            }
-            
-        }*/
-
 
         sprites.RemoveAll(sprite => binList.Contains(sprite));
         binList.Clear();
@@ -392,14 +375,14 @@ public class Game1 : Game
         {
             if(sceneManager.GetCurrentScene().GetType() == scene.GetType())
             {
-                if(Keyboard.GetState().IsKeyDown(Keys.B))
-                {
-                    MapDraw(drawDistance, scene.Collisions, collisionTexture);
-                }
                 MapDraw(drawDistance, scene.Fg, textureAtlas);
                 MapDraw(drawDistance, scene.Mg, textureAtlas);
                 MapDraw(drawDistance, scene.NewFg, newTexture);
                 MapDraw(drawDistance, scene.NewMg, newTexture);
+                if (Keyboard.GetState().IsKeyDown(Keys.B))
+                {
+                    MapDraw(drawDistance, scene.Collisions, collisionTexture);
+                }
             }
         }
 
@@ -407,17 +390,13 @@ public class Game1 : Game
 
         Globals.SpriteBatch.Draw(pixel, new Rectangle(0, 0, 1200, 50), Color.Red * 0.5f);
 
-        Globals.SpriteBatch.DrawString(font, $"FPS:{Math.Round( 1 / deltaTime)}", new Vector2(0, 5), Color.White);
+        Globals.SpriteBatch.DrawString(font, $"FPS:{Math.Round( 1 / deltaTime)}  Position:{player.rect}  Level:{sceneManager.GetCurrentScene().GetType().Name}", new Vector2(0, 5), Color.White);
 
-        Globals.SpriteBatch.DrawString(font, $"{player.rect}", new Vector2(200, 5), Color.White);
+       /* Globals.SpriteBatch.DrawString(font, $"{player.rect}", new Vector2(200, 5), Color.White);
+
+        Globals.SpriteBatch.DrawString(font, $"Level:{sceneManager.GetCurrentScene().GetType().Name}", new Vector2(800, 5), Color.White);*/
 
         gameManager.Draw();
-
-        
-
-        //Debug.WriteLine($"{(int)camera.X}-{(int)camera.Y}");
-
-
 
         _spriteBatch.End();
 
@@ -445,8 +424,6 @@ public class Game1 : Game
 
     private void HorizontalCollisions(GameTime gameTime, Dictionary<Vector2, int> tileCollisions, Dictionary<Vector2, int> tileForeGround)
     {
-        Debug.WriteLine($"HorizontalCollisions - Nombre de tiles: {tileCollisions.Count}");
-        Debug.WriteLine($"VerticalCollisions - Nombre de tiles: {tileCollisions.Count}");
         foreach (var entity in sprites)
         {
             entity.Update(gameTime);
@@ -547,9 +524,6 @@ public class Game1 : Game
     }
     private void VerticalCollisions(Dictionary<Vector2, int> tileCollisions, Dictionary<Vector2, int> tileForeGround, Dictionary<Vector2, int> tileMg)
     {
-        Debug.WriteLine($"HorizontalCollisions - Nombre de tiles: {tileCollisions.Count}");
-        Debug.WriteLine($"VerticalCollisions - Nombre de tiles: {tileCollisions.Count}");
-
         foreach (var entity in sprites)
         {
             if (entity is not Player)
@@ -653,7 +627,7 @@ public class Game1 : Game
                                     this.player.velocity.Y = 0;
                                 } 
                                 this.player.Iced = true;
-                                Debug.WriteLine("case 3");
+                                //Debug.WriteLine("case 3");
                             }
                             break;
 

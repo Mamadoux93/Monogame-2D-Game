@@ -36,6 +36,8 @@ namespace UltraLongMonogameTutoriel.Scenes
             Collisions = LoadMap("../../../Data/zaza_collisions.csv");
             SpawnPointX = 451;
             SpawnPointY = 8320;
+            SceneChangePointX = 2000;
+            SceneChangePointY = SpawnPointY - 500;
         }
 
         public override void Load()
@@ -44,10 +46,7 @@ namespace UltraLongMonogameTutoriel.Scenes
         }
         public override void Update(GameTime gameTime)
         {
-            Debug.WriteLine($"Mg count: {Mg.Count}");
-            Debug.WriteLine($"Fg count: {Fg.Count}");
-            Debug.WriteLine($"Collisions count: {Collisions.Count}");
-
+            
         }
 
         public override void Draw()

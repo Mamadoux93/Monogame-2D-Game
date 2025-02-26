@@ -17,6 +17,8 @@ namespace UltraLongMonogameTutoriel.Scenes
         public Dictionary<Vector2, int> NewFg { get; }
         public int SpawnPointX { get; set; }
         public int SpawnPointY { get; set; }
+        public int SceneChangePointX { get; set; }
+        public int SceneChangePointY { get; set; }
         public void Load();
         public void Update(GameTime gameTime);
         public void Draw();

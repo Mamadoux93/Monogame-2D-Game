@@ -30,6 +30,8 @@ namespace UltraLongMonogameTutoriel.Scenes
             this.contentManager = contentManager;
             SpawnPointX = 103;
             SpawnPointY = 7168;
+            SceneChangePointX = 700;
+            SceneChangePointY = SpawnPointY - 500;
             Fg = LoadMap("../../../Data/level2_fg.csv");
             Mg = LoadMap("../../../Data/level2_mg.csv");
             Collisions = LoadMap("../../../Data/Level2_collisions.csv");

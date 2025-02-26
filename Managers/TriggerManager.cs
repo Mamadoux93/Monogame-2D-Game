@@ -80,7 +80,10 @@ namespace UltraLongMonogameTutoriel.Managers
                 }
             }
         }
-
+        public void ClearTriggers()
+        {
+            triggerStates.Clear();
+        }
         public void Update()
         {
             foreach (var triggerBox in triggerStates)

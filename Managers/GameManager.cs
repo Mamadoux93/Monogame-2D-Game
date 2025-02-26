@@ -50,9 +50,10 @@ namespace UltraLongMonogameTutoriel.Managers
 
             ui.AddCanvas(200, 500, 1000, 1000);
 
-            triggerManager.AddTriggerBox("SpaceScene",player.rect.X, player.rect.Y, 90, 90, Color.Red, FirstCinematicTriggerBox);
             triggerManager.AddTriggerBox("SpaceScene",player.rect.X + 500, player.rect.Y - 800, 90, 1000, Color.Red, ClassicCinematic);
-            triggerManager.AddTriggerBox("SpaceScene",player.rect.X + 2000, player.rect.Y, 120, 120, Color.Chocolate, SceneChange);
+
+
+            InitializeTriggersForCurrentScene(); // Ca c'est pour la toute premiere cinématique sinon elle marche pas
 
         }
 
@@ -68,6 +69,8 @@ namespace UltraLongMonogameTutoriel.Managers
         //--Cinematics
         private void FirstCinematicTriggerBox(object sender, EventArgs e)
         {
+            cameraManager.FirstCinematic = true;
+            cameraManager.CameraPostion = new(player.rect.X, player.rect.Y);
             cameraManager.StartCinematic(1, -player.rect.X, -player.rect.Y, 10);
             cameraManager.FirstCinematic = false;
         }
@@ -79,14 +82,33 @@ namespace UltraLongMonogameTutoriel.Managers
 
         //--Cinematics
 
-        //Scene
+        //--Scene
         private void SceneChange(object sender, EventArgs e)
         {
             sceneManager.AddScene(new GameStartScene(Globals.Content, sceneManager, graphics));
             Globals.LevelChange = true;
+
+            InitializeTriggersForCurrentScene();
+        }
+        private void InitializeTriggersForCurrentScene()
+        {
+            string sceneName = sceneManager.CurrentScene.GetType().Name;
+            int spawnX = sceneManager.CurrentScene.SpawnPointX;
+            int spawnY = sceneManager.CurrentScene.SpawnPointY;
+            int sceneChangeX = sceneManager.CurrentScene.SceneChangePointX;
+            int sceneChangeY = sceneManager.CurrentScene.SceneChangePointY;
+
+            triggerManager.ClearTriggers();
+
+            triggerManager.AddTriggerBox(sceneName, spawnX, spawnY, 90, 90, Color.Red, FirstCinematicTriggerBox);
+            triggerManager.AddTriggerBox(sceneName, sceneChangeX, sceneChangeY, 120, 120, Color.Orange, SceneChange);
+
+            Debug.WriteLine($"Triggers ajoutés pour la scène {sceneName}");
         }
 
-        //Scene
+        //--Scene
+
+
         private void SpawnProjectile(object sender, EventArgs e)
         {
             SummonEntity<Projectiles>(ressourceManager.GetTexture("fireball"),

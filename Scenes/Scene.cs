@@ -19,6 +19,8 @@ namespace UltraLongMonogameTutoriel.Scenes
         GraphicsDeviceManager graphics;
         public int SpawnPointX { get; set; }
         public int SpawnPointY { get; set; }
+        public int SceneChangePointX { get; set; }
+        public int SceneChangePointY { get; set; }
 
         public Scene(ContentManager contentManager, SceneManager sceneManager, GraphicsDeviceManager graphics)
         {

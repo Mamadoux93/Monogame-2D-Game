@@ -196,7 +196,8 @@ namespace UltraLongMonogameTutoriel
         {
             // En mode la ca réinitialise tt quand ca respawn aulieu de recréer une instance qui va tout faire bugguer
             rect = new Rectangle(spawnPointX, spawnPointY, Globals.TILESIZE, Globals.TILESIZE);
-
+            velocity.X = 0;
+            velocity.Y = 0;
             Health = 50;
         }
 
