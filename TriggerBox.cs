@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UltraLongMonogameTutoriel.Managers;
+using System.Diagnostics;
 
 namespace UltraLongMonogameTutoriel
 {
@@ -26,16 +27,18 @@ namespace UltraLongMonogameTutoriel
 
         public void Update()
         {
-            if (rect.Intersects(Globals.Player.rect))
-            {
-                Intersection();
-            }
+
         }
         public void Intersection()
         {
-            
-             OnIntersection?.Invoke(this, EventArgs.Empty);
-            
+            if (OnIntersection != null)
+            {
+                OnIntersection.Invoke(this, EventArgs.Empty);
+            }
+            else
+            {
+                Debug.WriteLine("No event is assigned to this trigger");
+            }
         }
 
         public void Draw(Vector2 camera)

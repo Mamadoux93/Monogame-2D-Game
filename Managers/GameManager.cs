@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using UltraLongMonogameTutoriel.NPS;
+using UltraLongMonogameTutoriel.Scenes;
 
 namespace UltraLongMonogameTutoriel.Managers
 {
@@ -18,51 +19,77 @@ namespace UltraLongMonogameTutoriel.Managers
         
 
         private Player player;
+        private GraphicsDeviceManager graphics;
         private static CameraManager cameraManager;
         private RessourceManager ressourceManager;
         private List<Sprite> usableItems;
         //private readonly WindowResize windowResize;
+        private SceneManager sceneManager;
 
+        GameManagerConfig config;
 
-        private readonly TriggerManager triggerManager = new TriggerManager(cameraManager);
+        private readonly TriggerManager triggerManager;
 
         private List<Sprite> SummonedEntities { get; set; } = new List<Sprite>();
 
+
         public GameManager(GameManagerConfig config)
         {
+            this.config = config;
             player = config.Player;
             cameraManager = config.CameraManager;
             ressourceManager = config.RessourceManager;
             usableItems = config.UsableItems;
+            sceneManager = config.SceneManager;
+            graphics = config._GraphicsDeviceManager;
+
             triggerManager = new TriggerManager(cameraManager);
-            //this.windowResize = new(this.graphicsDeviceManager.GraphicsDevice, 1920, 1080);
             ui.AddButton(2500, 100, 90, 90, Color.Chocolate).OnClick += SpawnProjectile;
             ui.AddButton(2500, 200, 90, 90, Color.Aqua).OnClick += SpawnEnemy;
             ui.AddButton(2500, 300, 90, 90, Color.Crimson).OnClick += AwarnessSwitch;
 
             ui.AddCanvas(200, 500, 1000, 1000);
 
-            triggerManager.AddTriggerBox(player.rect.X, player.rect.Y, 90, 90, Color.Red).OnIntersection += FirstCinematicTriggerBox;
-            triggerManager.AddTriggerBox(player.rect.X + 500, player.rect.Y - 800, 90, 1000, Color.Red).OnIntersection += FirstCinematicTriggerBox;
+            triggerManager.AddTriggerBox("SpaceScene",player.rect.X, player.rect.Y, 90, 90, Color.Red, FirstCinematicTriggerBox);
+            triggerManager.AddTriggerBox("SpaceScene",player.rect.X + 500, player.rect.Y - 800, 90, 1000, Color.Red, ClassicCinematic);
+            triggerManager.AddTriggerBox("SpaceScene",player.rect.X + 2000, player.rect.Y, 120, 120, Color.Chocolate, SceneChange);
+
         }
 
         public void Update()
         {
             ui.Update();
-            
             DragDropManager.Update();
             InputManager.Update();
+
+            triggerManager.ActivateTriggersForScene(sceneManager.CurrentScene.GetType().Name);
+
         }
         //--Cinematics
         private void FirstCinematicTriggerBox(object sender, EventArgs e)
         {
-            cameraManager.StartCinematic(1, -player.rect.X, -player.rect.Y);
+            cameraManager.StartCinematic(1, -player.rect.X, -player.rect.Y, 10);
             cameraManager.FirstCinematic = false;
         }
+
+        private void ClassicCinematic(object sender, EventArgs e)
+        {
+            cameraManager.StartCinematic(1, -3000, -player.rect.Y, 0);
+        }
+
         //--Cinematics
+
+        //Scene
+        private void SceneChange(object sender, EventArgs e)
+        {
+            sceneManager.AddScene(new GameStartScene(Globals.Content, sceneManager, graphics));
+            Globals.LevelChange = true;
+        }
+
+        //Scene
         private void SpawnProjectile(object sender, EventArgs e)
         {
-            SummonEntity<Projectiles>(ressourceManager.GetTexture("player_static"),
+            SummonEntity<Projectiles>(ressourceManager.GetTexture("fireball"),
                 new Rectangle(player.rect.X, player.rect.Top, Globals.TILESIZE, Globals.TILESIZE),
                 new Rectangle(0, 0, 8, 8),
                 usableItems, player);
@@ -111,7 +138,7 @@ namespace UltraLongMonogameTutoriel.Managers
                 triggerManager.Draw();
             }
             triggerManager.Update();
-            triggerManager.CheckTriggers(player, cameraManager);
+            triggerManager.CheckTriggers(player);
         }
     }
 }

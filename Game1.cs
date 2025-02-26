@@ -4,6 +4,7 @@
 // MonoGame template; don't be deterred!
 
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -15,6 +16,8 @@ using System.Net;
 using System.Net.Sockets;
 using UltraLongMonogameTutoriel.Managers;
 using UltraLongMonogameTutoriel.NPS;
+using UltraLongMonogameTutoriel.Scenes;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace UltraLongMonogameTutoriel;
 
@@ -25,24 +28,27 @@ public class Game1 : Game
     private GameWindow _window;
 
 
-    private readonly Dictionary<Vector2, int> mg;
-    private readonly Dictionary<Vector2, int> fg;
-    private readonly Dictionary<Vector2, int> collisions;
+    private readonly Dictionary<Vector2, int> zazamg;
+    private readonly Dictionary<Vector2, int> zazafg;
+    private readonly Dictionary<Vector2, int> zazacollisions;
+    private readonly Dictionary<Vector2 , int> level2collisions;
+    private readonly Dictionary<Vector2, int> level2mg;
+    private readonly Dictionary<Vector2, int> level2fg;
+    private readonly Dictionary<Vector2, int> level2newfg;
+    private readonly Dictionary<Vector2, int> level2newmg;
 
-    
+
+    private int spawnPointX  /*1001*/;
+    private int spawnPointY /*8256*/;
 
 
-    
-    private int spawnPointX = 1001;
-    private int spawnPointY = 8256;
-
-    public int playerSpriteSizeX = 8;
-    public int playerSpriteSizeY = 16;
 
     private Texture2D rectangleTexture;
     private Texture2D pixel;
+
     private Texture2D textureAtlas;
-    private Texture2D hitboxTexture;
+    private Texture2D collisionTexture;
+    private Texture2D newTexture;
 
     private List<Sprite> sprites;
     private List<Sprite> usableItems;
@@ -54,7 +60,9 @@ public class Game1 : Game
     private GameManager gameManager;
     private SceneManager sceneManager;
 
-    
+
+    int num_tiles_per_row = 8;
+    int pixel_tilesize = 8;
 
     private SpriteFont font;
 
@@ -66,16 +74,12 @@ public class Game1 : Game
     private EnemyZebi enemy;
     private Items mushroom;
     private Projectiles projectile;
-    
 
-
+    private IScene[] scenes;
 
 
     private Dictionary<EnemyZebi, TriggerBox> enemyBoxes = new();
     private List<Rectangle> intersections;
-
-
-
 
     public Game1()
     {
@@ -85,9 +89,19 @@ public class Game1 : Game
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
 
-        fg = LoadMap("../../../Data/zaza_fg.csv");
-        mg = LoadMap("../../../Data/zaza_mg.csv");
-        collisions = LoadMap("../../../Data/zaza_collisions.csv");
+        zazafg = LoadMap("../../../Data/zaza_fg.csv");
+        zazamg = LoadMap("../../../Data/zaza_mg.csv");
+        zazacollisions = LoadMap("../../../Data/zaza_collisions.csv");
+        level2fg = LoadMap("../../../Data/Level2_fg.csv");
+        level2mg = LoadMap("../../../Data/Level2_mg.csv");
+        level2collisions = LoadMap("../../../Data/Level2_collisions.csv");
+        level2newfg = LoadMap("../../../Data/Level2_newfg.csv");
+        level2newmg = LoadMap("../../../Data/Level2_newmg.csv");
+        
+
+
+
+
 
         intersections = new();
         sprites = new List<Sprite>();
@@ -157,23 +171,28 @@ public class Game1 : Game
         Globals.SpriteBatch = _spriteBatch;
         Globals.GraphicsDevice = GraphicsDevice;
 
-        RessourceManager resourceManager = new RessourceManager();
+        RessourceManager resourceManager = new();
         resourceManager.LoadContent(Content);
+
+
 
         sceneManager.AddScene(new SpaceScene(Content, sceneManager, _graphics));
 
-        RessourceManager.Textures["fireball"] = Content.Load<Texture2D>("fireball");
-        RessourceManager.Textures["player_static"] = Content.Load<Texture2D>("player_static");
-        RessourceManager.Textures["Mushroom"] = Content.Load<Texture2D>("Mushroom");
         RessourceManager.Textures["rectangleTexture"] = rectangleTexture;
 
+        scenes = new IScene[]
+        {
+            new SpaceScene(Content, sceneManager, _graphics),
+            new GameStartScene(Content, sceneManager, _graphics)
+        };
 
         cameraManager = new(1437, -1000, _graphics);
 
         triggerManager = new(cameraManager);
         
         textureAtlas = Content.Load<Texture2D>("tempassets");
-        hitboxTexture = Content.Load<Texture2D>("hitboxes");
+        collisionTexture = Content.Load<Texture2D>("hitboxes");
+        newTexture = Content.Load<Texture2D>("atlas");
 
 
         pixel = new Texture2D(GraphicsDevice, 1, 1);
@@ -192,6 +211,8 @@ public class Game1 : Game
             CameraManager = cameraManager,
             RessourceManager = resourceManager,
             UsableItems = usableItems,
+            SceneManager = sceneManager,
+            _GraphicsDeviceManager = _graphics
         });
 
         
@@ -213,71 +234,34 @@ public class Game1 : Game
 
         prevKeystate = Keyboard.GetState();
 
-        player.Walled = false;  
+        player.Walled = false;
 
-        HorizontalCollisions(gameTime);
+        Debug.WriteLine($"Nombre de scènes dans scenes : {scenes.Length}");
 
-        VerticalCollisions();
+        Debug.WriteLine($"Scene actuelle dans SceneManager: {sceneManager.CurrentScene?.GetType().Name}");
 
-        foreach (var kvp in enemyBoxes)
+        foreach (var scene in scenes)
         {
-            EnemyZebi enemy = kvp.Key; // L'ennemi associé à cette boîte
-            TriggerBox stompBox = kvp.Value;
+            Debug.WriteLine(scene);
+            if (sceneManager.CurrentScene.GetType() == scene.GetType())
+            {
+                if (Globals.LevelChange)
+                {
+                    player.Respawn(scene.SpawnPointX, scene.SpawnPointY);
+                    Globals.LevelChange = false;
+                }
+                player.HealthMethod(scene.SpawnPointX, scene.SpawnPointY);
 
-            if (player.rect.Intersects(stompBox.rect) && !player.Invincibility)
-            {
-                player.velocity.Y += -1200 * Globals.DeltaTime;
-                EnemyDeath(enemy);
-                break;
-            }
-            if(stompBox.rect.Y > 8500)
-            {
-                enemyBoxes.Remove(enemy);
+                HorizontalCollisions(gameTime, scene.Collisions, scene.Fg);
+
+                VerticalCollisions(scene.Collisions, scene.Fg, scene.Mg);
             }
         }
+        
 
-        foreach (var sprite in sprites)
-        {
-            if (sprite is EnemyZebi enemy)
-            {
-                enemy.DeathCooldown.Update(gameTime);
-
-                if (!enemyBoxes.ContainsKey(enemy))
-                {
-                    enemyBoxes[enemy] = new TriggerBox(pixel, new Rectangle(enemy.rect.X, enemy.rect.Y - 20, Globals.TILESIZE, Globals.TILESIZE));
-                }
-
-                enemyBoxes[enemy].rect = new Rectangle(enemy.rect.X + 7, enemy.rect.Y - 20, 50, 70);
-
-                if (enemy.Dead)
-                {
-                    if (enemyBoxes.ContainsKey(enemy))
-                    {
-                        enemyBoxes.Remove(enemy); // Supprime la boîte
-                    }
-                    if (!enemy.DeathCooldown.Active)
-                    {
-                        binList.Add(sprite);
-                        Debug.WriteLine($"Suppression de l'ennemi à la position {enemy.rect.X}, {enemy.rect.Y}");
-                    }
-                }
-            }
-            else if (sprite is Items mushroom && !mushroom.Summoned)
-            {
-                binList.Add(mushroom);
-            }
-        }
-
-        //Debug.WriteLine($"{Globals.DeltaTime}");
-        SummonNPS();
-
-        PlayerHealth();
+        StompMecanism(gameTime);
 
         ListManager();
-
-
-        /*Debug.WriteLine($"Player rect: {player.rect}");
-        Debug.WriteLine($"Enemy rect: {enemy.rect}");*/
 
         if (Keyboard.GetState().IsKeyDown(Keys.I))
         {
@@ -323,11 +307,11 @@ public class Game1 : Game
     );*/
 
         }
-        Debug.WriteLine($"position: {player.rect.X} - {player.rect.Y} - {cameraManager.CameraPostion.X} - {cameraManager.CameraPostion.Y}");
+        //Debug.WriteLine($"position: {player.rect.X} - {player.rect.Y} - {cameraManager.CameraPostion.X} - {cameraManager.CameraPostion.Y}");
         sprites.RemoveAll(s => binList.Contains(s));
 
         Globals.Update(gameTime);
-        cameraManager.Update();
+        cameraManager.Update(gameTime);
         gameManager.Update();
         base.Update(gameTime);
     }
@@ -404,13 +388,28 @@ public class Game1 : Game
 
         float drawDistance =(float)(_graphics.PreferredBackBufferWidth / 1.5);
 
-        MapDraw(drawDistance);
+        foreach (var scene in scenes)
+        {
+            if(sceneManager.GetCurrentScene().GetType() == scene.GetType())
+            {
+                if(Keyboard.GetState().IsKeyDown(Keys.B))
+                {
+                    MapDraw(drawDistance, scene.Collisions, collisionTexture);
+                }
+                MapDraw(drawDistance, scene.Fg, textureAtlas);
+                MapDraw(drawDistance, scene.Mg, textureAtlas);
+                MapDraw(drawDistance, scene.NewFg, newTexture);
+                MapDraw(drawDistance, scene.NewMg, newTexture);
+            }
+        }
 
         SpritesDraw(drawDistance);
 
-        Globals.SpriteBatch.Draw(pixel, new Rectangle(0, 0, 600, 50), Color.Red * 0.5f);
+        Globals.SpriteBatch.Draw(pixel, new Rectangle(0, 0, 1200, 50), Color.Red * 0.5f);
 
         Globals.SpriteBatch.DrawString(font, $"FPS:{Math.Round( 1 / deltaTime)}", new Vector2(0, 5), Color.White);
+
+        Globals.SpriteBatch.DrawString(font, $"{player.rect}", new Vector2(200, 5), Color.White);
 
         gameManager.Draw();
 
@@ -444,9 +443,10 @@ public class Game1 : Game
         Debug.WriteLine($"Enemy {enemy.rect.X}, {enemy.rect.Y} mort, DeathCooldown démarré.");
     }
 
-    private void HorizontalCollisions(GameTime gameTime)
+    private void HorizontalCollisions(GameTime gameTime, Dictionary<Vector2, int> tileCollisions, Dictionary<Vector2, int> tileForeGround)
     {
-
+        Debug.WriteLine($"HorizontalCollisions - Nombre de tiles: {tileCollisions.Count}");
+        Debug.WriteLine($"VerticalCollisions - Nombre de tiles: {tileCollisions.Count}");
         foreach (var entity in sprites)
         {
             entity.Update(gameTime);
@@ -455,7 +455,7 @@ public class Game1 : Game
             intersections = getIntersectingTilesHorizontal(entity.rect);
             foreach (var rect in intersections)
             {
-                if (collisions.TryGetValue(new Vector2(rect.X, rect.Y), out int _val))
+                if (tileCollisions.TryGetValue(new Vector2(rect.X, rect.Y), out int _val))
                 {
 
                     // create temp rect to handle collisions (not necessary, you can optimize!)
@@ -532,7 +532,7 @@ public class Game1 : Game
                     }
 
                 }
-                else if (fg.TryGetValue(new Vector2(rect.X, rect.Y), out int _valFG))
+                else if (tileForeGround.TryGetValue(new Vector2(rect.X, rect.Y), out int _valFG))
                 {
                     /*Debug.WriteLineIf(sprite == player, $"{_valFG}");
                     if (sprite == player && !player.Grounded)
@@ -545,8 +545,11 @@ public class Game1 : Game
 
         }
     }
-    private void VerticalCollisions()
+    private void VerticalCollisions(Dictionary<Vector2, int> tileCollisions, Dictionary<Vector2, int> tileForeGround, Dictionary<Vector2, int> tileMg)
     {
+        Debug.WriteLine($"HorizontalCollisions - Nombre de tiles: {tileCollisions.Count}");
+        Debug.WriteLine($"VerticalCollisions - Nombre de tiles: {tileCollisions.Count}");
+
         foreach (var entity in sprites)
         {
             if (entity is not Player)
@@ -558,7 +561,7 @@ public class Game1 : Game
             foreach (var rect in intersections)
             {
 
-                if (collisions.TryGetValue(new Vector2(rect.X, rect.Y), out int _val))
+                if (tileCollisions.TryGetValue(new Vector2(rect.X, rect.Y), out int _val))
                 {
 
                     Rectangle collision = new Rectangle(rect.X * Globals.TILESIZE, rect.Y * Globals.TILESIZE, Globals.TILESIZE, Globals.TILESIZE);
@@ -665,9 +668,9 @@ public class Game1 : Game
                                 this.player.Iced = false;
 
                                 // joueur toucher block, block transformer en autre block zebi
-                                collisions[new Vector2(rect.X, rect.Y)] = 5;
+                                tileCollisions[new Vector2(rect.X, rect.Y)] = 5;
 
-                                mg[new Vector2(rect.X, rect.Y)] = 1;
+                                tileMg[new Vector2(rect.X, rect.Y)] = 1;
 
                                 Items tempmushroom = new Items(Content.Load<Texture2D>("Mushroom"), new Rectangle(collision.X, collision.Y - 70, Globals.TILESIZE, Globals.TILESIZE), new Rectangle(0, 0, 8, 8));
 
@@ -715,16 +718,7 @@ public class Game1 : Game
 
         }
     }
-    private void PlayerRespawn()
-    {
-        // En mode la ca réinitialise tt quand ca respawn aulieu de recréer une instance qui va tout faire bugguer
-        player.rect = new Rectangle(spawnPointX, spawnPointY, Globals.TILESIZE, Globals.TILESIZE * 2);
-        player.velocity = Vector2.Zero;
-        player.JumpCounter = 0;
-        player.Grounded = false;
-        player.Walled = false;
-        player.Health = 100;
-    }
+    
 
     private void ListManager()
     {
@@ -760,165 +754,17 @@ public class Game1 : Game
         }
     }
 
-    private void PlayerHealth()
+
+    private void MapDraw(float drawDistance, Dictionary<Vector2, int> tiles, Texture2D texture)
     {
-        if (player.rect.Y > 9000 || player.Health <= 0)
+        if (tiles != null)
         {
-            PlayerRespawn();
-        }
-
-        if (player.Health == 100)
-        {
-            player.rect.Height = Globals.TILESIZE * 2;
-        }
-        else if (player.Health <= 50)
-        {
-            player.rect = new Rectangle(player.rect.X, player.rect.Y, Globals.TILESIZE, Globals.TILESIZE);
-        }
-    }
-
-    private void SummonNPS()
-    {
-        /*if (Keyboard.GetState().IsKeyDown(Keys.E))
-        {
-            player.SummonEntity<Projectiles>(fireballTexture, new Rectangle(player.rect.X, player.rect.Top, TILESIZE, TILESIZE), new Rectangle(0, 0, 8, 8), usableItems);
-        }
-
-        if (Keyboard.GetState().IsKeyDown(Keys.Enter))
-        {
-            player.SummonEntity<EnemyZebi>(enemyTexture, new Rectangle(player.rect.X + 300, player.rect.Y, TILESIZE, TILESIZE * 2), new Rectangle(0, 0, 8, 16), usableItems);
-        }
-
-        if(Keyboard.GetState().IsKeyDown(Keys.N))
-        {
-            player.SummonEntity<Items>(mushroomTexture, new Rectangle(player.rect.X + 300, player.rect.Y, TILESIZE, TILESIZE), new Rectangle(0,0,8,8), usableItems);
-        }*/
-    }
-
-
-    private void MapDraw(float drawDistance)
-    {
-        int num_tiles_per_row = 8;
-        int pixel_tilesize = 8;
-
-
-        foreach (var item in fg)
-        {
-            Vector2 tilePosition = item.Key * Globals.TILESIZE;
-
-            // Calculer la distance entre le joueur et le tile
-            float distance = Vector2.Distance(tilePosition, player.rect.Location.ToVector2());
-
-            if (distance < drawDistance && !cameraManager.IsCinemating)
-            {
-                Rectangle drect = new(
-                (int)item.Key.X * Globals.TILESIZE + (int)cameraManager.CameraPostion.X,
-                (int)item.Key.Y * Globals.TILESIZE + (int)cameraManager.CameraPostion.Y,
-                Globals.TILESIZE,
-                Globals.TILESIZE
-            );
-
-                // get the src rect (the part of the image drawn) from the value
-                int x = item.Value % num_tiles_per_row;
-                int y = item.Value / num_tiles_per_row;
-
-                Rectangle src = new(
-                    x * pixel_tilesize,
-                    y * pixel_tilesize,
-                    pixel_tilesize,
-                    pixel_tilesize
-                );
-
-                Globals.SpriteBatch.Draw(textureAtlas, drect, src, Color.White);
-            }
-            else
-            {
-                Rectangle drect = new(
-                (int)item.Key.X * Globals.TILESIZE + (int)cameraManager.CameraPostion.X,
-                (int)item.Key.Y * Globals.TILESIZE + (int)cameraManager.CameraPostion.Y,
-                Globals.TILESIZE,
-                Globals.TILESIZE
-            );
-
-                // get the src rect (the part of the image drawn) from the value
-                int x = item.Value % num_tiles_per_row;
-                int y = item.Value / num_tiles_per_row;
-
-                Rectangle src = new(
-                    x * pixel_tilesize,
-                    y * pixel_tilesize,
-                    pixel_tilesize,
-                    pixel_tilesize
-                );
-
-                Globals.SpriteBatch.Draw(textureAtlas, drect, src, Color.White);
-            }
-
-        }
-
-        foreach (var item in mg)
-        {
-            Vector2 tilePosition = item.Key * Globals.TILESIZE;
-
-            // distance entre player et le tile sa mere
-            float distance = Vector2.Distance(tilePosition, player.rect.Location.ToVector2());
-
-
-            if (distance < drawDistance && !cameraManager.IsCinemating)
-            {
-                // create the destination rect from the key
-                Rectangle drect = new(
-                (int)item.Key.X * Globals.TILESIZE + (int)cameraManager.CameraPostion.X,
-                (int)item.Key.Y * Globals.TILESIZE + (int)cameraManager.CameraPostion.Y,
-                Globals.TILESIZE,
-                Globals.TILESIZE
-            );
-
-                // get the src rect (the part of the image drawn) from the value
-                int x = item.Value % num_tiles_per_row;
-                int y = item.Value / num_tiles_per_row;
-
-                Rectangle src = new(
-                    x * pixel_tilesize,
-                    y * pixel_tilesize,
-                    pixel_tilesize,
-                    pixel_tilesize
-                );
-
-                Globals.SpriteBatch.Draw(textureAtlas, drect, src, Color.White);
-            }
-            else
-            {
-                Rectangle drect = new(
-                (int)item.Key.X * Globals.TILESIZE + (int)cameraManager.CameraPostion.X,
-                (int)item.Key.Y * Globals.TILESIZE + (int)cameraManager.CameraPostion.Y,
-                Globals.TILESIZE,
-                Globals.TILESIZE
-            );
-
-                // get the src rect (the part of the image drawn) from the value
-                int x = item.Value % num_tiles_per_row;
-                int y = item.Value / num_tiles_per_row;
-
-                Rectangle src = new(
-                    x * pixel_tilesize,
-                    y * pixel_tilesize,
-                    pixel_tilesize,
-                    pixel_tilesize
-                );
-
-                Globals.SpriteBatch.Draw(textureAtlas, drect, src, Color.White);
-            }
-        }
-
-        if (Keyboard.GetState().IsKeyDown(Keys.B))
-        {
-            foreach (var item in collisions)
+            foreach (var item in tiles)
             {
                 Vector2 tilePosition = item.Key * Globals.TILESIZE;
-
-                // distance entre player et le tile sa mere
                 float distance = Vector2.Distance(tilePosition, player.rect.Location.ToVector2());
+
+
                 if (distance < drawDistance && !cameraManager.IsCinemating)
                 {
                     Rectangle drect = new(
@@ -938,8 +784,7 @@ public class Game1 : Game
                         pixel_tilesize
                     );
 
-                    Globals.SpriteBatch.Draw(hitboxTexture, drect, src, Color.White);
-
+                    Globals.SpriteBatch.Draw(texture, drect, src, Color.White);
                 }
                 else
                 {
@@ -961,7 +806,7 @@ public class Game1 : Game
                         pixel_tilesize
                     );
 
-                    Globals.SpriteBatch.Draw(hitboxTexture, drect, src, Color.White);
+                    Globals.SpriteBatch.Draw(texture, drect, src, Color.White);
                 }
             }
         }
@@ -996,6 +841,57 @@ public class Game1 : Game
         if (player.Invincibility)
         {
             player.Draw(Globals.SpriteBatch, cameraManager.CameraPostion);
+        }
+    }
+    private void StompMecanism(GameTime gameTime)
+    {
+        foreach (var kvp in enemyBoxes)
+        {
+            EnemyZebi enemy = kvp.Key;
+            TriggerBox stompBox = kvp.Value;
+
+            if (player.rect.Intersects(stompBox.rect) && !player.Invincibility)
+            {
+                player.velocity.Y += -1200 * Globals.DeltaTime;
+                EnemyDeath(enemy);
+                break;
+            }
+            if (stompBox.rect.Y > 8500)
+            {
+                enemyBoxes.Remove(enemy);
+            }
+        }
+
+        foreach (var sprite in sprites)
+        {
+            if (sprite is EnemyZebi enemy)
+            {
+                enemy.DeathCooldown.Update(gameTime);
+
+                if (!enemyBoxes.ContainsKey(enemy))
+                {
+                    enemyBoxes[enemy] = new TriggerBox(pixel, new Rectangle(enemy.rect.X, enemy.rect.Y - 20, Globals.TILESIZE, Globals.TILESIZE));
+                }
+
+                enemyBoxes[enemy].rect = new Rectangle(enemy.rect.X + 7, enemy.rect.Y - 20, 50, 70);
+
+                if (enemy.Dead)
+                {
+                    if (enemyBoxes.ContainsKey(enemy))
+                    {
+                        enemyBoxes.Remove(enemy);
+                    }
+                    if (!enemy.DeathCooldown.Active)
+                    {
+                        binList.Add(sprite);
+                        Debug.WriteLine($"Suppression de l'ennemi à la position {enemy.rect.X}, {enemy.rect.Y}");
+                    }
+                }
+            }
+            else if (sprite is Items mushroom && !mushroom.Summoned)
+            {
+                binList.Add(mushroom);
+            }
         }
     }
 }

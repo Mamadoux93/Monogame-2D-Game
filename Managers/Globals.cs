@@ -27,6 +27,8 @@ namespace UltraLongMonogameTutoriel.Managers
         public static int TILESIZE { get; set; } = 64;
         public static bool NPS_Awarness { get; set; } = true;
 
+        public static bool LevelChange { get; set; } = true;
+
         public static void Update(GameTime gameTime)
         {
             LastMouseState = MouseState;

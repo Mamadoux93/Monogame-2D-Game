@@ -191,6 +191,31 @@ namespace UltraLongMonogameTutoriel
             InvincibilityTimer.StartTimer();
             InvincibilityBlink.StartTimer();
         }
+
+        public void Respawn(int spawnPointX, int spawnPointY)
+        {
+            // En mode la ca réinitialise tt quand ca respawn aulieu de recréer une instance qui va tout faire bugguer
+            rect = new Rectangle(spawnPointX, spawnPointY, Globals.TILESIZE, Globals.TILESIZE);
+
+            Health = 50;
+        }
+
+        public void HealthMethod(int spawnPointX, int spawnPointY)
+        {
+            if (rect.Y > 9000 || Health <= 0)
+            {
+                Respawn(spawnPointX, spawnPointY);
+            }
+
+            if (Health == 100)
+            {
+                rect.Height = Globals.TILESIZE * 2;
+            }
+            else if (Health <= 50)
+            {
+                rect = new Rectangle(rect.X, rect.Y, Globals.TILESIZE, Globals.TILESIZE);
+            }
+        }
     }
 
 }
